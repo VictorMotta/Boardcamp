@@ -9,7 +9,7 @@
     "dev": "nodemon ./src/app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Victor Motta",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
