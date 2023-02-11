@@ -2,6 +2,10 @@ import { db } from "../config/database.connection.js";
 import dayjs from "dayjs";
 
 export const getRentals = async (req, res) => {
+  const { status, startDate } = req.query;
+  console.log(status);
+  console.log(startDate);
+
   try {
     const rentals = await db.query(
       `SELECT json_build_object(
@@ -29,7 +33,23 @@ export const getRentals = async (req, res) => {
     ON rentals."gameId"=games.id;`
     );
 
-    const listaLimpa = rentals.rows.map((json) => json.json_build_object);
+    let listaLimpa = rentals.rows.map((json) => json.json_build_object);
+
+    if (status != undefined) {
+      if (status == "open") {
+        const newList = listaLimpa.filter((rental) => rental.returnDate === null);
+        listaLimpa = newList;
+      }
+      if (status == "closed") {
+        const newList = listaLimpa.filter((rental) => rental.returnDate != null);
+        listaLimpa = newList;
+      }
+    }
+
+    if (startDate != undefined) {
+      const newList = listaLimpa.filter((rental) => rental.rentDate >= startDate);
+      listaLimpa = newList;
+    }
 
     res.send(listaLimpa);
   } catch (err) {
