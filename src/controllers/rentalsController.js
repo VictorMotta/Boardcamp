@@ -2,10 +2,8 @@ import { db } from "../config/database.connection.js";
 import dayjs from "dayjs";
 
 export const getRentals = async (req, res) => {
-  const { status, startDate } = req.query;
-  console.log(status);
-  console.log(startDate);
-
+  const { status, startDate, customerId, gameId } = req.query;
+  const verifyNumber = new RegExp("[0-9]");
   try {
     const rentals = await db.query(
       `SELECT json_build_object(
@@ -35,7 +33,7 @@ export const getRentals = async (req, res) => {
 
     let listaLimpa = rentals.rows.map((json) => json.json_build_object);
 
-    if (status != undefined) {
+    if (status != undefined || status) {
       if (status == "open") {
         const newList = listaLimpa.filter((rental) => rental.returnDate === null);
         listaLimpa = newList;
@@ -46,12 +44,26 @@ export const getRentals = async (req, res) => {
       }
     }
 
-    if (startDate != undefined) {
+    if (startDate != undefined || startDate) {
       const newList = listaLimpa.filter((rental) => rental.rentDate >= startDate);
       listaLimpa = newList;
     }
 
-    res.send(listaLimpa);
+    if (customerId != undefined || customerId) {
+      if (verifyNumber.test(customerId)) {
+        const newList = listaLimpa.filter((rental) => rental.customerId == customerId);
+        listaLimpa = newList;
+      }
+    }
+
+    if (gameId != undefined || gameId) {
+      if (verifyNumber.test(gameId)) {
+        const newList = listaLimpa.filter((rental) => rental.gameId == gameId);
+        listaLimpa = newList;
+      }
+    }
+
+    return res.send(listaLimpa);
   } catch (err) {
     res.status(500).send(err.message);
   }

@@ -1,10 +1,15 @@
 import { db } from "../config/database.connection.js";
 
 export const getGames = async (req, res) => {
-  try {
-    const games = await db.query(`SELECT * FROM games;`);
+  const { name } = req.query;
 
-    console.log(games);
+  try {
+    let games = await db.query(`SELECT * FROM games;`);
+
+    if (name != undefined) {
+      games = await db.query(`SELECT * FROM games WHERE LOWER(name) LIKE LOWER('${name}%');`);
+    }
+
     res.send(games.rows);
   } catch (error) {
     res.sendStatus(500);

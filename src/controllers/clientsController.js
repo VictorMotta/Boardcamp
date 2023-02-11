@@ -1,8 +1,14 @@
 import { db } from "../config/database.connection.js";
 
 export const getClients = async (req, res) => {
+  const { cpf } = req.query;
+  const verifyNumber = new RegExp("[0-9]");
   try {
-    const clientes = await db.query("SELECT * FROM customers");
+    let clientes = await db.query("SELECT * FROM customers");
+
+    if (cpf != undefined && verifyNumber.test(cpf)) {
+      clientes = await db.query(`SELECT * FROM customers WHERE cpf LIKE '${cpf}%';`);
+    }
 
     res.send(clientes.rows);
   } catch (err) {
