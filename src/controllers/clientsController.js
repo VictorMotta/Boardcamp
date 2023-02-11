@@ -16,7 +16,7 @@ export const getClientId = async (req, res) => {
   try {
     const cliente = await db.query("SELECT * FROM customers WHERE id = $1", [id]);
 
-    if (cliente.rowCount === 0) {
+    if (cliente.rowCount <= 0) {
       return res.status(404).send("Usuário não encontrado!");
     }
 

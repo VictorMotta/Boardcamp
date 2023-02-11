@@ -12,7 +12,7 @@ import { existClient, existCpfUpdate } from "../middlewares/clientsValidation.js
 const ClientesRouter = Router();
 
 ClientesRouter.get("/customers", getClients);
-ClientesRouter.get("/custumers/:id", getClientId);
+ClientesRouter.get("/customers/:id", getClientId);
 ClientesRouter.post("/customers", validateSchema(clientSchema), existClient, postClient);
 ClientesRouter.put("/customers/:id", validateSchema(clientSchema), existCpfUpdate, putClient);
 
