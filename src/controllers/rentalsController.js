@@ -56,3 +56,47 @@ export const insertRental = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+export const returnRentals = async (req, res) => {
+  const { id } = req.params;
+  const rental = res.locals.existRental;
+  const currentDate = dayjs(new Date());
+  const daysRented = rental.daysRented;
+  const rentDate = dayjs(rental.rentDate);
+  let amountPay = 0;
+
+  try {
+    const game = await db.query(`SELECT * FROM games WHERE id=$1`, [rental.gameId]);
+    const pricePerDay = game.rows[0].pricePerDay;
+
+    if (rentDate.$M === currentDate.$M) {
+      let daysToPay = currentDate.$D - rentDate.$D - daysRented;
+      let totalPayToFine = daysToPay * pricePerDay;
+      amountPay = totalPayToFine;
+    }
+
+    if (rentDate.$M < currentDate.$M) {
+      let lastMonth = currentDate.$M - rentDate.$M;
+      let daysRemain = currentDate.$D - rentDate.$D;
+      let totalDays = lastMonth * 30 + daysRemain;
+      amountPay = totalDays * pricePerDay;
+    }
+
+    if (amountPay <= 0) {
+      await db.query(`UPDATE rentals SET "returnDate"=$1,"delayFee"='0' WHERE id=$2;`, [
+        currentDate,
+        id,
+      ]);
+      return res.sendStatus(200);
+    } else {
+      await db.query(`UPDATE rentals SET "returnDate"=$1,"delayFee"=$2 WHERE id=$3;`, [
+        currentDate,
+        amountPay,
+        id,
+      ]);
+      return res.sendStatus(200);
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};

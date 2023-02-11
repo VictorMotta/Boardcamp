@@ -47,3 +47,27 @@ export const verifyStockGames = async (req, res, next) => {
     res.status(500).send(err.message);
   }
 };
+
+export const verifyReturnRentals = async (req, res, next) => {
+  const { id } = req.params;
+  if (!id || id <= 0) {
+    return res.sendStatus(404);
+  }
+
+  try {
+    const existRental = await db.query("SELECT * FROM rentals WHERE id=$1", [id]);
+
+    if (existRental.rowCount <= 0) {
+      return res.status(404).send("Aluguel não existe!");
+    }
+    if (existRental.rows[0].returnDate != null) {
+      return res.status(400).send("Este aluguel ja foi entregue!");
+    }
+
+    res.locals.existRental = existRental.rows[0];
+
+    next();
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
