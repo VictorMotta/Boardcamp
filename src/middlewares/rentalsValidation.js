@@ -71,3 +71,23 @@ export const verifyReturnRentals = async (req, res, next) => {
     res.status(500).send(err.message);
   }
 };
+
+export const verifyDeleteRental = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const rental = await db.query("SELECT * FROM rentals WHERE id=$1;", [id]);
+
+    if (rental.rowCount <= 0) {
+      return res.status(404).send("Aluguel não existe!");
+    }
+
+    if (rental.rows[0].returnDate == null) {
+      return res.status(400).send("Não pode excluir um aluguel sem ter devolvido o game!");
+    }
+
+    next();
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
